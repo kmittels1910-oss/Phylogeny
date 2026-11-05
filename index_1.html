@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lab 5: Phylogeny</title>
+<style>
+:root{--ink:#1a1a1a;--bg:#fff;--soft:#f1f5f9;--ac:#0b4f8a;--ok:#14633a;--bad:#9b1c1c;--line:#4a5a6a}
+@media(prefers-color-scheme:dark){:root{--ink:#f1f1f1;--bg:#14181d;--soft:#1f2730;--ac:#8ec5ff;--ok:#7fdca5;--bad:#ffa3a3;--line:#b5c2d0}}
+*{box-sizing:border-box}
+body{margin:0;font:1.0625rem/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg)}
+.wrap{max-width:860px;margin:0 auto;padding:0 1rem 4rem}
+h1{font-size:2rem;margin:1.2rem 0 .3rem}h2{font-size:1.5rem;margin:0 0 .5rem;color:var(--ac)}h3{font-size:1.15rem;margin:1.2rem 0 .3rem}
+section{margin:2.2rem 0;padding-top:1rem;border-top:3px solid var(--soft)}
+a{color:var(--ac)}
+:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.skip{position:absolute;left:-999px;background:var(--bg);padding:.6rem}.skip:focus{left:.5rem;top:.5rem;z-index:9}
+nav ol{display:flex;flex-wrap:wrap;gap:.5rem;list-style:none;padding:0;margin:.8rem 0}
+nav a{display:inline-block;padding:.5rem .9rem;min-height:44px;border:2px solid var(--ac);border-radius:999px;text-decoration:none;font-weight:600}
+nav a:hover{background:var(--soft)}
+.card{background:var(--soft);border-radius:12px;padding:1rem 1.2rem;margin:1rem 0}
+.vids{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.vw{position:relative;padding-top:56.25%}.vw iframe{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:8px}
+video{width:100%;border-radius:8px}
+.vph{aspect-ratio:16/9;display:grid;place-items:center;border:2px dashed var(--line);border-radius:8px;text-align:center}
+fieldset{border:2px solid var(--line);border-radius:10px;margin:1rem 0;padding:.6rem 1rem 1rem}
+legend{font-weight:700;padding:0 .4rem}
+label.opt,label.chip{display:flex;align-items:center;gap:.6rem;min-height:44px;cursor:pointer}
+label.chip{display:inline-flex;margin-right:1rem}
+input[type=radio],input[type=checkbox]{width:1.35rem;height:1.35rem;accent-color:var(--ac)}
+input[type=text],textarea{font:inherit;color:inherit;background:var(--bg);border:2px solid var(--line);border-radius:6px;padding:.45rem .6rem;min-height:44px;max-width:100%}
+textarea{width:100%;min-height:6rem}
+button{font:inherit;font-weight:700;min-height:44px;padding:.4rem 1.1rem;border-radius:8px;border:2px solid var(--ac);background:var(--ac);color:var(--bg);cursor:pointer;margin-top:.5rem}
+button.alt{background:transparent;color:var(--ac)}
+.fb{min-height:1.6em;margin:.5rem 0 0;font-weight:600}.fb.ok{color:var(--ok)}.fb.bad{color:var(--bad)}
+.tree{overflow-x:auto}.tree svg{width:100%;min-width:480px;height:auto;display:block}
+svg line{stroke:var(--line);stroke-width:2.5}svg text{fill:var(--ink);font:15px system-ui,sans-serif}
+svg text.hl{font-weight:800;fill:var(--ac)}svg .tk{font-size:12.5px;fill:var(--ac);font-weight:700;text-anchor:middle}
+svg circle{fill:var(--bg);stroke:var(--line);stroke-width:2}svg .nm{font-size:12px;text-anchor:middle;font-weight:700}
+table{border-collapse:collapse;margin:.8rem 0;max-width:100%}th,td{border:2px solid var(--line);padding:.35rem .7rem;text-align:center}
+th{background:var(--soft)}td.d{font-weight:800;color:var(--ac)}
+table input{width:2.6rem;text-align:center;padding:.2rem}table input.w{width:9rem;text-align:left}
+.scroll{overflow-x:auto}
+@media print{nav,button,.vids{display:none}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+<div class="wrap">
+<header>
+  <h1>Lab 5: Phylogeny</h1>
+  <p>Learn to read a phylogenetic tree, build one from a character matrix, and sort organisms into monophyletic, paraphyletic and polyphyletic groups. Feedback is instant, nothing is graded here, and you can retry any question.</p>
+  <label>Your name <input type="text" id="name" autocomplete="name"></label>
+  <nav aria-label="Lab parts"><ol>
+    <li><a href="#s0">Watch</a></li><li><a href="#s1">1 Read a tree</a></li><li><a href="#s2">2 Practice</a></li><li><a href="#s3">3 Build a tree</a></li><li><a href="#s4">4 Groups</a></li><li><a href="#s5">Exit questions</a></li><li><a href="#s6">Save</a></li>
+  </ol></nav>
+</header>
+<main id="main">
+
+<section id="s0"><h2>Objectives and videos</h2>
+<p>After this lab you should be able to:</p>
+<ul><li>Interpret relationships shown on a phylogenetic tree.</li><li>Create a character matrix and use it to build a tree.</li><li>Apply the terms homoplasy, shared ancestral and shared derived characters, monophyletic, paraphyletic and polyphyletic.</li><li>Use a phylogeny to develop hypotheses.</li></ul>
+<div class="vids">
+  <div><h3>Concept video: how to build a tree</h3><div id="v1"></div></div>
+  <div><h3>Message from your instructor</h3><div id="v2"></div></div>
+</div>
+<div class="card"><h3 style="margin-top:0">Building a tree in four steps</h3>
+<ol><li>Pick traits and score each organism: <strong>0</strong> = ancestral state, <strong>1</strong> = derived state. The <strong>outgroup</strong> (most distant relative) shows the ancestral states.</li><li>Find the trait shared by the <em>most</em> organisms. Those organisms form the largest clade; mark that trait with a tick on the branch.</li><li>Inside that clade, repeat with the next trait, so groups nest inside groups.</li><li>Every split (node) has two branches. Organisms that share the newest node are <strong>sister taxa</strong>.</li></ol></div>
+</section>
+
+<section id="s1"><h2>Part 1: Understanding cladograms</h2>
+<p>A <strong>cladogram</strong> is a branching diagram with organisms (<strong>taxa</strong>) at the tips. Each branch is a <strong>clade</strong>. A <strong>node</strong> is where two clades split from a common ancestor, and the two clades that split there are <strong>sister clades</strong>. Tick marks show where a new trait evolved; every organism after that tick inherited it.</p>
+<p><strong>Ancestral</strong> traits are shared by everyone in the tree, so they say little about closest relatives. <strong>Derived</strong> traits shared by a subgroup reveal who shares a more recent ancestor.</p>
+<div class="tree" id="t1"></div>
+<div class="scroll" id="m1"></div>
+<div id="q1"></div>
+</section>
+
+<section id="s2"><h2>Part 2: Practice with an online simulation</h2>
+<p>Each tree-building mission is a logic puzzle. Open the simulation, choose Guest Access, and complete <strong>Missions 1 and 2</strong>. Use the magnifying glass to see who has which traits. You are done with a tree when every circle above the species is filled and a question appears.</p>
+<p><a href="https://www.pbs.org/wgbh/nova/labs/lab/evolution/" target="_blank" rel="noopener">Open the NOVA Labs evolution simulation (opens in a new tab)</a></p>
+<p>Take a screenshot showing you finished all missions and upload it to the Canvas assignment.</p>
+<label class="opt"><input type="checkbox" data-r="I completed Missions 1 and 2 and have my screenshot"> I completed Missions 1 and 2 and have my screenshot</label>
+</section>
+
+<section id="s3"><h2>Part 3: Make a cladogram from a character matrix</h2>
+<h3>Practice: build the tree for these plants</h3>
+<p>This matrix scores five plants against the outgroup, Moss. <strong>1</strong> means the derived trait is present. For each trait below, select every organism that has it. Your tree grows as you get each one right.</p>
+<div class="scroll" id="m2"></div>
+<div id="steps"></div>
+<div class="tree" id="t2" aria-live="polite"></div>
+
+<h3>Homology and homoplasy</h3>
+<p>If two taxa share a trait, the simplest assumption is that it evolved once in their common ancestor (<strong>homology</strong>, like hair in humans and dogs). Sometimes a trait evolves independently more than once, like wings in insects, bats and birds. This is <strong>homoplasy</strong> (convergent evolution). A trait that switches back to the ancestral state is a <strong>reversal</strong>. When your tree needs the same trait to appear twice, you may have found homoplasy.</p>
+
+<h3>Exercise 1: Caminalcule character matrix</h3>
+<p>Use your printed Caminalcule sheet. Look at the whole group first. A character must have at least two conditions, for example rear appendage absent (0) or present (1). Keep the outgroup to one side: it shows the ancestral state. Describe up to eight characters, then fill in the matrix with 0 or 1.</p>
+<div id="chars"></div>
+<div class="scroll" id="cm"></div>
+<p><strong>Show your work to your TA before moving on.</strong></p>
+<h3>Exercise 2: Draw your Caminalcule cladogram</h3>
+<p>Draw it on paper or with a drawing tool and upload the picture to Canvas. Put the outgroup first, add a tick mark and trait at each split, and remember that each node has only two branches. You may find an example of homoplasy.</p>
+</section>
+
+<section id="s4"><h2>Part 4: Superimposing taxonomic groups</h2>
+<h3>Linnaean classification</h3>
+<p>Fill in the nesting groups from most to least inclusive: Domain, Kingdom, then</p>
+<div id="lin"></div>
+<h3>Monophyletic, paraphyletic and polyphyletic</h3>
+<p>Modern biology only recognizes <strong>monophyletic</strong> groups: a common ancestor plus <em>all</em> its descendants. A <strong>paraphyletic</strong> group has a common ancestor but leaves out some descendants. A <strong>polyphyletic</strong> group lumps together organisms that did <em>not</em> inherit their shared traits from a common ancestor (for example, whales and seals are both aquatic mammals with reduced limbs, but evolved those features separately).</p>
+<p><strong>Challenge:</strong> select organisms to make a group of each type. The tree highlights your selection, and the checker names the type.</p>
+<div id="g1"></div>
+</section>
+
+<section id="s5"><h2>Exit questions</h2>
+<p>Use this tree. Traits 1 and 2 are marked on the branches where they evolved, and the numbered circles are nodes.</p>
+<div class="tree" id="t3"></div>
+<div id="q3"></div>
+<h3>Impose a taxonomy on the tree</h3>
+<p>Make a monophyletic, a paraphyletic and a polyphyletic group on this tree.</p>
+<div id="g2"></div>
+<label for="listing"><strong>List the organisms and nodes inside each of your groupings:</strong></label>
+<textarea id="listing" data-r="Groupings I made (organisms and nodes)"></textarea>
+</section>
+
+<section id="s6"><h2>Save your work</h2>
+<p>Download a text file of your answers and typed responses to upload to Canvas, or print this page.</p>
+<button type="button" id="dl">Download my responses</button> <button type="button" class="alt" onclick="print()">Print</button>
+</section>
+</main></div>
+
+<script>
+/* ===== INSTRUCTOR SETUP: paste video links here =====
+   url: YouTube link, Canvas Studio / Panopto / Vimeo embed link, or a .mp4 file path.
+   Use a captioned video (WCAG). For .mp4 add captions: 'captions.vtt'. Optional transcript text. */
+const VIDEOS={
+  explainer:{title:'Concept video: how to build a phylogenetic tree',url:'',captions:'',transcript:''},
+  instructor:{title:'Instructor video',url:'',captions:'',transcript:''}
+};
+/* ===== end setup ===== */
+
+const $=s=>document.querySelector(s),R={};
+function vid(host,v){
+  if(!v.url){host.innerHTML='<div class="vph"><p>Video coming soon.</p></div>';return}
+  let u=v.url,m=u.match(/(?:youtu\.be\/|v=|embed\/)([\w-]{11})/);
+  if(m)u='https://www.youtube-nocookie.com/embed/'+m[1]+'?cc_load_policy=1&rel=0';
+  host.innerHTML=/\.(mp4|webm)$/i.test(u)
+   ?`<video controls preload="metadata" src="${u}">${v.captions?`<track kind="captions" src="${v.captions}" srclang="en" label="English" default>`:''}</video>`
+   :`<div class="vw"><iframe src="${u}" title="${v.title}" allow="fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
+  if(v.transcript)host.insertAdjacentHTML('beforeend',`<details><summary>Transcript</summary><p>${v.transcript}</p></details>`);
+}
+vid($('#v1'),VIDEOS.explainer);vid($('#v2'),VIDEOS.instructor);
+
+/* ---- tree engine ---- */
+const conv=a=>typeof a==='string'?{n:a}:{c:a.map(conv),t:[]};
+const lv=x=>x.l||(x.l=x.n?[x.n]:x.c.flatMap(lv));
+const nodes=x=>x.n?[]:[x,...x.c.flatMap(nodes)];
+function annotate(T,chars){chars.forEach(c=>{const n=nodes(T).find(x=>lv(x).length==c.s.length&&c.s.every(s=>lv(x).includes(s)));if(n)n.t.push(c.n)});return T}
+const D=x=>x.n||'('+(x.t&&x.t.length?'trait gained: '+x.t.join(' and ')+'; ':'')+x.c.map(D).join(', ')+')';
+function draw(host,T,o={}){
+  const dx=o.dx||112,rh=36;let li=0,id=0,s='';
+  (function pl(x){if(x.n){x.y=22+li++*rh;x.h=0}else{x.id=++id;x.c.forEach(pl);x.h=1+Math.max(...x.c.map(c=>c.h));x.y=(x.c[0].y+x.c[x.c.length-1].y)/2}})(T);
+  const H=T.h,W=30+H*dx+140,Ht=22+li*rh;
+  (function rd(x,px){
+    const X=30+(H-x.h)*dx,f=px==null?8:px;
+    s+=`<line x1="${f}" y1="${x.y}" x2="${X}" y2="${x.y}"/>`;
+    (x.t||[]).forEach((t,i)=>{const tx=(f+X)/2;s+=`<line x1="${tx}" y1="${x.y-8}" x2="${tx}" y2="${x.y+8}"/><text class="tk" x="${tx}" y="${x.y-13-i*14}">${t}</text>`});
+    if(x.n){const on=o.hl&&o.hl.includes(x.n);s+=`<text class="${on?'hl':''}" x="${X+8}" y="${x.y+5}">${on?'■ ':''}${x.n}</text>`}
+    else{s+=`<line x1="${X}" y1="${x.c[0].y}" x2="${X}" y2="${x.c[x.c.length-1].y}"/>`;x.c.forEach(c=>rd(c,X));
+      if(o.nums)s+=`<circle cx="${X}" cy="${x.y}" r="12"/><text class="nm" x="${X}" y="${x.y+4}">${x.id}</text>`}
+  })(T);
+  host.innerHTML=`<svg viewBox="0 0 ${W} ${Ht}" role="img" aria-label="Cladogram in nested notation, outgroup branch first: ${D(T)}"><g>${s}</g></svg>`;
+}
+function matrix(host,taxa,chars,cap){
+  host.innerHTML=`<table><caption>${cap}</caption><thead><tr><th scope="col">Taxon</th>${chars.map(c=>`<th scope="col">${c.n}</th>`).join('')}</tr></thead><tbody>${taxa.map(t=>`<tr><th scope="row">${t}</th>${chars.map(c=>{const d=c.s.includes(t);return`<td class="${d?'d':''}">${d?1:0}</td>`}).join('')}</tr>`).join('')}</tbody></table>`;
+}
+
+/* ---- question helper ---- */
+function Q(host,text,opts,ans,why){
+  const id='q'+Math.random().toString(36).slice(2),multi=Array.isArray(ans),f=document.createElement('fieldset');
+  f.innerHTML=`<legend>${text}</legend>`+opts.map(o=>`<label class="opt"><input type="${multi?'checkbox':'radio'}" name="${id}" value="${o}"> ${o}</label>`).join('')+`<button type="button">Check answer</button><p class="fb" role="status"></p>`;
+  const fb=f.querySelector('.fb');
+  f.querySelector('button').onclick=()=>{
+    const v=[...f.querySelectorAll('input:checked')].map(i=>i.value);
+    if(!v.length){fb.className='fb';fb.textContent='Choose an answer first.';return}
+    const ok=multi?v.slice().sort().join()==ans.slice().sort().join():v[0]==ans;
+    R[text.replace(/<[^>]+>/g,'')]=v.join(', ')+(ok?' (correct)':' (not yet correct)');
+    fb.className='fb '+(ok?'ok':'bad');
+    fb.textContent=ok?'Correct. '+why:'Not quite. Look at the tree again and try once more.';
+  };
+  host.append(f);
+}
+
+/* ---- Part 1 ---- */
+const C1=[{n:'Vertebral column',s:['Lamprey','Bass','Frog','Turtle','Leopard']},{n:'Jaw',s:['Bass','Frog','Turtle','Leopard']},{n:'Four legs',s:['Frog','Turtle','Leopard']},{n:'Amnion',s:['Turtle','Leopard']},{n:'Hair',s:['Leopard']}];
+const T1=annotate(conv(['Lancelet',['Lamprey',['Bass',['Frog',['Turtle','Leopard']]]]]),C1);
+draw($('#t1'),T1);
+matrix($('#m1'),lv(T1),C1,'Character matrix for the tree above. 1 is the derived state, 0 is the ancestral state.');
+const sp=['Lancelet','Lamprey','Bass','Frog','Turtle','Leopard'];
+Q($('#q1'),'Which group is the outgroup?',sp,'Lancelet','The outgroup branches off first, so its states are the ancestral ones: no vertebral column, jaw, legs, amnion or hair.');
+Q($('#q1'),'Trace the lineage from the root to the Lancelet. Do any of the ancestral traits change?',['Yes','No'],'No','The lancelet keeps every ancestral state, so there are no ticks on its branch.');
+Q($('#q1'),'Trace the path from the root to the Bass. Does a vertebral column arise in its lineage?',['Yes','No'],'Yes','The tick for vertebral column sits below the Lamprey branch, so the Bass lineage passes it.');
+Q($('#q1'),'Trace the path from the root to the Frog. Does an amnion arise in its lineage?',['Yes','No'],'No','Amnion appears only on the branch leading to Turtle and Leopard.');
+Q($('#q1'),'In the matrix, what is the state of <strong>four legs</strong> for the Lamprey?',['0: no legs (ancestral)','1: four legs (derived)'],'0: no legs (ancestral)','The Lamprey branches off before four legs evolved.');
+
+/* ---- Part 3 build ---- */
+const C2=[{n:'Vascular tissue',s:['Fern','Pine','Lily','Rose','Daisy']},{n:'Seeds',s:['Pine','Lily','Rose','Daisy']},{n:'Flowers',s:['Lily','Rose','Daisy']},{n:'Two seed leaves',s:['Rose','Daisy']}];
+const P=['Rose','Moss','Pine','Daisy','Fern','Lily'],done=[];
+matrix($('#m2'),P,C2,'Character matrix for the plant practice set. 1 is derived, 0 is ancestral.');
+function grow(){
+  const sets=done.slice().sort((a,b)=>a.s.length-b.s.length);let ns=['Moss','Fern','Pine','Lily','Rose','Daisy'].map(n=>({n}));
+  sets.forEach(c=>{const inn=ns.filter(x=>lv(x).every(l=>c.s.includes(l)));ns=ns.filter(x=>!inn.includes(x));ns.push({c:inn,t:[c.n]})});
+  draw($('#t2'),{c:ns,t:[]},{dx:100});
+}
+grow();
+C2.forEach(c=>{
+  const f=document.createElement('fieldset');
+  f.innerHTML=`<legend>Which organisms have <em>${c.n}</em> (state 1)?</legend>`+P.map(p=>`<label class="chip"><input type="checkbox" value="${p}"> ${p}</label>`).join('')+`<br><button type="button">Check and add to tree</button><p class="fb" role="status"></p>`;
+  const fb=f.querySelector('.fb');
+  f.querySelector('button').onclick=()=>{
+    const v=[...f.querySelectorAll('input:checked')].map(i=>i.value);
+    if(v.slice().sort().join()==c.s.slice().sort().join()){
+      if(!done.includes(c)){done.push(c);grow()}
+      fb.className='fb ok';fb.textContent='Correct. These organisms form a clade, and the tick on the tree marks where '+c.n+' evolved.'+(done.length==C2.length?' Your tree is complete: Moss is the outgroup, and Rose and Daisy are sister taxa.':'');
+      R['Plant tree: '+c.n]='correct';
+    }else{fb.className='fb bad';fb.textContent='Not quite. Check each row of the matrix for a 1 in this column.'}
+  };
+  $('#steps').append(f);
+});
+$('#chars').innerHTML='<fieldset><legend>Character descriptions (use as many as you need)</legend>'+[1,2,3,4,5,6,7,8].map(i=>`<p><label>Character ${i} <input type="text" class="w" style="width:min(30rem,100%)" data-r="Caminalcule character ${i}"></label></p>`).join('')+'</fieldset>';
+$('#cm').innerHTML='<table><caption>Character matrix for Caminalcules. Enter 0 or 1.</caption><thead><tr><th scope="col">Taxon</th>'+[1,2,3,4,5,6,7,8].map(i=>`<th scope="col">Char ${i}</th>`).join('')+'</tr></thead><tbody>'+[1,2,3,4,5,6].map(r=>`<tr><th scope="row"><input type="text" class="w" aria-label="Taxon name, row ${r}" data-r="Matrix row ${r} taxon"></th>`+[1,2,3,4,5,6,7,8].map(c=>`<td><input type="text" maxlength="1" inputmode="numeric" aria-label="Row ${r}, character ${c}" data-r="Matrix r${r} c${c}"></td>`).join('')+'</tr>').join('')+'</tbody></table>';
+
+/* ---- Part 4 ---- */
+const lin=['Phylum','Class','Order','Family','Genus','Species'];
+$('#lin').innerHTML='<fieldset><legend>Domain, Kingdom, then six more levels in order</legend>'+lin.map((l,i)=>`<label class="chip">Level ${i+3} <input type="text" id="lv${i}" style="width:9rem" autocomplete="off"></label>`).join('')+'<br><button type="button" id="lc">Check order</button><p class="fb" role="status" id="lf"></p></fieldset>';
+$('#lc').onclick=()=>{const v=lin.map((_,i)=>$('#lv'+i).value.trim().toLowerCase()),bad=lin.map((l,i)=>v[i]==l.toLowerCase()?null:i+3).filter(Boolean);
+  R['Linnaean order']=v.join(' > ');$('#lf').className='fb '+(bad.length?'bad':'ok');
+  $('#lf').textContent=bad.length?'Check level'+(bad.length>1?'s ':' ')+bad.join(', ')+'. Move from most inclusive to least inclusive.':'Correct: Domain, Kingdom, Phylum, Class, Order, Family, Genus, Species.'};
+function classify(T,S){
+  if(S.length<2)return null;
+  const m=nodes(T).filter(x=>S.every(s=>lv(x).includes(s))).sort((a,b)=>lv(a).length-lv(b).length)[0];
+  if(lv(m).length==S.length)return'mono';
+  const ok=x=>{const ls=lv(x),k=ls.filter(l=>S.includes(l)).length;if(!k||k==ls.length)return true;return x.c.some(c=>lv(c).every(l=>S.includes(l)))&&x.c.every(ok)};
+  return ok(m)?'para':'poly';
+}
+const MSG={mono:'Monophyletic: a common ancestor and all of its descendants (one complete clade).',para:'Paraphyletic: includes a common ancestor but leaves out at least one of its descendant groups.',poly:'Polyphyletic: these organisms do not share a common ancestor that belongs only to this group. Any shared traits evolved independently.'};
+function groups(host,T,key){
+  const names=lv(T),found=new Set();
+  host.innerHTML=`<div class="tree"></div><fieldset><legend>Select organisms for your group</legend>${names.map(n=>`<label class="chip"><input type="checkbox" value="${n}"> ${n}</label>`).join('')}</fieldset><p class="fb" role="status" aria-live="polite">Select two or more organisms.</p><p>Types you have made: <strong class="fd">none yet</strong></p>`;
+  const tr=host.querySelector('.tree'),fb=host.querySelector('.fb'),fd=host.querySelector('.fd');
+  const up=()=>{const S=[...host.querySelectorAll('input:checked')].map(i=>i.value),k=classify(T,S);draw(tr,T,{hl:S,nums:true,dx:100});
+    if(!k){fb.className='fb';fb.textContent='Select two or more organisms.';return}
+    found.add(k);fb.className='fb ok';fb.textContent=`${S.join(', ')}: ${MSG[k]}`;
+    const nm={mono:'Monophyletic',para:'Paraphyletic',poly:'Polyphyletic'};fd.textContent=[...found].map(f=>nm[f]+' ✓').join(', ');R['Group types found ('+key+')']=[...found].map(f=>nm[f]).join(', ')};
+  host.addEventListener('change',up);up();fb.textContent='Select two or more organisms.';fb.className='fb';
+}
+groups($('#g1'),conv(['Lizard',[['Deer',['Hippo','Whale']],['Seal','Bear']]]),'animal tree');
+
+/* ---- Exit ---- */
+const C3=[{n:'Trait 1',s:['B','C','D','E','F','G']},{n:'Trait 2',s:['D','E','F','G']}];
+const TE=annotate(conv(['A',[['B','C'],[['D','E'],['F','G']]]]),C3);
+draw($('#t3'),TE,{nums:true});
+const N=['Node 1','Node 2','Node 3','Node 4','Node 5','Node 6'],L='ABCDEFG'.split('');
+Q($('#q3'),'Which node is the most recent common ancestor of <strong>B</strong> and <strong>C</strong>?',N,'Node 3','B and C are sister taxa, so they meet at the node just below them.');
+Q($('#q3'),'Which node is the most recent common ancestor of <strong>A</strong> and <strong>B</strong>?',N,'Node 1','A branches off at the root, so it meets B at the first node.');
+Q($('#q3'),'Which species is the outgroup?',L,'A','A branches off first, before all other species.');
+Q($('#q3'),'Which species have Trait 1? (select all)',L,['B','C','D','E','F','G'],'Trait 1 evolved on the branch to Node 2, so every species after it has it.');
+Q($('#q3'),'Which species have Trait 2? (select all)',L,['D','E','F','G'],'Trait 2 evolved on the branch to Node 4.');
+Q($('#q3'),'Which species is most closely related to <strong>E</strong>?',L.filter(x=>x!='E'),'D','D and E are sister taxa.');
+Q($('#q3'),'Which species is most closely related to <strong>F</strong>?',L.filter(x=>x!='F'),'G','F and G are sister taxa.');
+groups($('#g2'),TE,'exit tree');
+
+/* ---- save ---- */
+$('#dl').onclick=()=>{
+  const out=['Lab 5: Phylogeny, my responses','Name: '+($('#name').value||'(not entered)'),''];
+  document.querySelectorAll('[data-r]').forEach(e=>{const v=e.type=='checkbox'?(e.checked?'Yes':''):e.value.trim();if(v)out.push(e.dataset.r+': '+v)});
+  for(const k in R)out.push(k+': '+R[k]);
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out.join('\n')],{type:'text/plain'}));a.download='Lab5_Phylogeny_responses.txt';a.click();
+};
+</script>
+</body>
+</html>
